@@ -140,7 +140,6 @@ class Sf {
 		);
 	}
 
-
 	/**
 	* Get available offers by SF by city
 	*
@@ -151,10 +150,11 @@ class Sf {
 		return $this->_makeCall('offers/list?uuid=7954B0AE-AC97-435D-A0EB-350932BAF933&ostype=Iphone&cityid=' . $cityId, 'GET');
 	}
 
-	public function testCase() {
-		return $this->_makeCall('offers/list?uuid=7954B0AE-AC97-435D-A0EB-350932BAF933&ostype=Iphone&cityid=BS', 'GET');
-	}
-
+	/**
+	* Parse Digest WWW-authentication header
+	*
+	* @return array
+	*/
 	private function parseHttpDigest($digest) {
 	    $data = array();
 	    $parts = explode(", ", $digest);
@@ -167,6 +167,11 @@ class Sf {
 	    return $data;
 	}
 
+	/**
+	* Parse array and return Digest auth header
+	*
+	* @return string Digest header
+	*/
 	private function generateDigestHeader($data) {
 		$A1 = md5($this->_apiuser . ':' . $data['Digest realm'] . ':' . $this->_apipassword);
 		$A2 = md5("GET" . ':' . $data['uri']);
