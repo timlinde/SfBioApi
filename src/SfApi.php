@@ -38,22 +38,59 @@ class Sf {
 		}
 	}
 
+	/**
+	* Get movie by its id.
+	*
+	* @param integer $movieId                   Sf movie ID
+	* @param string $cityId                Sf city ID (BS = Borås)
+	*
+	* @return mixed
+	*/
 	public function getMovie($movieId, $cityId = 'BS') {
 		return $this->_makeCall('movies/moviedetail/' . $movieId . '?cityid=' . $cityId);
 	}
 
-	public function getAvailableMovies() {
-		return $this->_makeCall('tickets/currentmovies/BS', 'GET');
+	/**
+	* Get available movies by city
+	*
+	* @param string $cityId                   Sf city ID (BS = Borås)
+	*
+	* @return mixed
+	*/
+	public function getAvailableMovies($cityId) {
+		return $this->_makeCall('tickets/currentmovies/' . $cityId, 'GET');
 	}
 
+	/**
+	* Get upcoming movies
+	*
+	*
+	*
+	* @return mixed
+	*/
 	public function getUpcomingMovies() {
 		return $this->_makeCall('movies/upcomingmovies', 'GET');
 	}
 
+	/**
+	* Get available tickets for movies
+	*
+	* @param integer $movieId                   Sf movie ID
+	* @param string $cityId                   Sf city ID (BS = Borås)
+	* @param string $date                   Date you wish to book tickets on
+	*
+	* @return mixed
+	*/
 	public function getTicketsOfMovie($movieId, $date, $cityId) {
 		return $this->_makeCall('tickets/shows?cityid=' . $cityId . '&movieid=' . $movieId . '&date=' . $date . '&includeAllVersions=true', 'GET');
 	}
 
+	/**
+	* Get available seats in auditorium (Not working, not finished yet)
+	*
+	*
+	* @return mixed
+	*/
 	public function getAvailableSeats() {
 		//$theatreName, $sys99Code, $movieId, $date, $cityId
 		//return $this->_makeCall('auditorium/layout/2001/5/60/50');
@@ -61,6 +98,16 @@ class Sf {
 		return $this->_makeCall('auditorium/layout/2001/1/60/50');
 	}
 
+
+	/**
+	* Book tickets for a movie
+	*
+	* @param integer $sys99Code               Auditorium id
+	* @param string $cityId                   Sf city ID (BS = Borås)
+	* @param string $datetime                  Unixtime you wish to book tickets on
+	* @param array $seats
+	* @return mixed
+	*/
 	public function bookTickets($cityId = 'BS', $sys99Code, $datetime, $seats = null) {
 
 		$postData = [
@@ -77,6 +124,12 @@ class Sf {
 		);
 	}
 
+	/**
+	* Release tickets for a movie (Stop booking process)
+	*
+	* @param integer $bookingId               Booking id from bookTickets() call.
+	* @return mixed
+	*/
 	public function releaseTickets($bookingId) {
 		return $this->_makeCall(
 			'tickets/unlockseats', 
@@ -87,6 +140,13 @@ class Sf {
 		);
 	}
 
+
+	/**
+	* Get available offers by SF by city
+	*
+	* @param string $cityId                   Sf city ID (BS = Borås)
+	* @return mixed
+	*/
 	public function getOffers($cityId = 'BS') {
 		return $this->_makeCall('offers/list?uuid=7954B0AE-AC97-435D-A0EB-350932BAF933&ostype=Iphone&cityid=' . $cityId, 'GET');
 	}
