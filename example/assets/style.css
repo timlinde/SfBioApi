@@ -1,0 +1,146 @@
+/**
+ * Sf Bio PHP API
+ * Basic Example
+ *
+ * @link https://github.com/timlinde/SfBioApi
+ * @author Tim Linde
+ * @since 13.05.2015
+ */
+
+@import url(http://fonts.googleapis.com/css?family=Lato:300,400,700);
+
+html {
+  height: 100%;
+}
+
+*,
+*:after,
+*:before {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+.clearfix:before,
+.clearfix:after {
+  content: " ";
+  display: table;
+}
+
+.clearfix:after {
+  clear: both;
+}
+
+.clearfix {
+  *zoom: 1;
+}
+
+body {
+  font-family: 'Lato', Calibri, Arial, sans-serif;
+  background: #f9f9f9;
+  font-weight: 300;
+  font-size: 15px;
+  color: #333;
+  overflow: scroll;
+  overflow-x: hidden;
+}
+
+a {
+  color: #555;
+  text-decoration: none;
+}
+
+.container {
+  width: 100%;
+  position: relative;
+}
+
+.container > header {
+  width: 90%;
+  max-width: 1240px;
+  margin: 0 auto;
+  position: relative;
+  padding: 0 30px 50px 30px;
+}
+
+.container > header {
+  padding: 60px 30px 50px;
+  text-align: center;
+}
+
+.container > header h1 {
+  font-size: 34px;
+  line-height: 38px;
+  margin: 0 auto;
+  font-weight: 700;
+  color: #333;
+}
+
+.container > header h1 span {
+  display: block;
+  font-size: 20px;
+  font-weight: 300;
+}
+
+.main > footer {
+  text-align: center;
+  padding: 30px 20px;
+}
+
+.main > footer p {
+  display: block;
+  padding: 10px;
+}
+
+.grid {
+  list-style: none;
+  padding: 20px 0;
+  margin: 0 auto;
+  text-align: center;
+  width: 100%;
+}
+
+.grid li {
+  display: block;
+  margin: 10px 5px 0 5px;
+  float: left;
+  border-radius: 3px;
+  height: 230px;
+  width: 200px;
+  overflow: hidden;
+}
+
+.grid li .poster {
+  width: 150px;
+  margin: 0 auto;
+}
+
+.grid li  img {
+  display: block;
+}
+
+.media {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 250px;
+  height: 250px;
+  z-index: 1;
+}
+
+.content {
+  padding: 100px 8px 8px;
+  position: absolute;
+  background: #edeff0;
+  width: 250px;
+  height: 250px;
+  z-index: 0;
+}
+
+.content > p {
+  display: inline-block;
+  color: #9BA6B0;
+  font-weight: 500;
+}
