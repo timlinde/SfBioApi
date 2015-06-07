@@ -47,7 +47,7 @@ class Sf {
 	* @return mixed
 	*/
 	public function getMovie($movieId, $cityId = 'BS') {
-		return $this->_makeCall('movies/moviedetail/' . $movieId . '?cityid=' . $cityId);
+		return $this->makeCall('movies/moviedetail/' . $movieId . '?cityid=' . $cityId);
 	}
 
 	/**
@@ -58,7 +58,7 @@ class Sf {
 	* @return mixed
 	*/
 	public function getAvailableMovies($cityId) {
-		return $this->_makeCall('tickets/currentmovies/' . $cityId, 'GET');
+		return $this->makeCall('tickets/currentmovies/' . $cityId, 'GET');
 	}
 
 	/**
@@ -69,7 +69,7 @@ class Sf {
 	* @return mixed
 	*/
 	public function getUpcomingMovies() {
-		return $this->_makeCall('movies/upcomingmovies', 'GET');
+		return $this->makeCall('movies/upcomingmovies', 'GET');
 	}
 
 	/**
@@ -82,7 +82,7 @@ class Sf {
 	* @return mixed
 	*/
 	public function getTicketsOfMovie($movieId, $date, $cityId) {
-		return $this->_makeCall('tickets/shows?cityid=' . $cityId . '&movieid=' . $movieId . '&date=' . $date . '&includeAllVersions=true', 'GET');
+		return $this->makeCall('tickets/shows?cityid=' . $cityId . '&movieid=' . $movieId . '&date=' . $date . '&includeAllVersions=true', 'GET');
 	}
 
 	/**
@@ -93,9 +93,9 @@ class Sf {
 	*/
 	public function getAvailableSeats() {
 		//$theatreName, $sys99Code, $movieId, $date, $cityId
-		//return $this->_makeCall('auditorium/layout/2001/5/60/50');
-		//return $this->_makeCall('auditorium/layout/2001/4/60/50');
-		return $this->_makeCall('auditorium/layout/2001/1/60/50');
+		//return $this->makeCall('auditorium/layout/2001/5/60/50');
+		//return $this->makeCall('auditorium/layout/2001/4/60/50');
+		return $this->makeCall('auditorium/layout/2001/1/60/50');
 	}
 
 
@@ -117,7 +117,7 @@ class Sf {
 			'seatkey' => ':36'
 		];
 
-		return $this->_makeCall(
+		return $this->makeCall(
 			'tickets/lockseats', 
 			'POST',
 			$postData
@@ -131,7 +131,7 @@ class Sf {
 	* @return mixed
 	*/
 	public function releaseTickets($bookingId) {
-		return $this->_makeCall(
+		return $this->makeCall(
 			'tickets/unlockseats', 
 			'POST',
 			[
@@ -147,7 +147,7 @@ class Sf {
 	* @return mixed
 	*/
 	public function getOffers($cityId = 'BS') {
-		return $this->_makeCall('offers/list?uuid=7954B0AE-AC97-435D-A0EB-350932BAF933&ostype=Iphone&cityid=' . $cityId, 'GET');
+		return $this->makeCall('offers/list?uuid=7954B0AE-AC97-435D-A0EB-350932BAF933&ostype=Iphone&cityid=' . $cityId, 'GET');
 	}
 
 	/**
@@ -202,7 +202,7 @@ class Sf {
 	    return $headers;
 	} 
 
-	protected function _makeCall($function, $method = 'GET', $postData = null, $digestData = null) {
+	protected function makeCall($function, $method = 'GET', $postData = null, $digestData = null) {
 
 		if (is_null($digestData)) {
 			$headerData = [
@@ -238,7 +238,7 @@ class Sf {
 	    curl_setopt($ch, CURLOPT_TIMEOUT, 90);
 	    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 	    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-	    curl_setopt($ch, CURLOPT_VERBOSE, true);
+	    curl_setopt($ch, CURLOPT_VERBOSE, false);
 		curl_setopt($ch, CURLOPT_HEADER, true);
 
 		if ('POST' === $method) {
@@ -254,7 +254,7 @@ class Sf {
 
 	    if (is_null($digestData)) {
 		    $headers = $this->get_headers_from_curl_response($jsonData);
-		    return $this->_makeCall($function, $method, $postData, $this->parseHttpDigest($headers['WWW-Authenticate']));
+		    return $this->makeCall($function, $method, $postData, $this->parseHttpDigest($headers['WWW-Authenticate']));
 		} else {
 			return json_decode($body);
 		}
