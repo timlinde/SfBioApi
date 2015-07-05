@@ -3,7 +3,7 @@
 class Sf {
 
 
-	const API_URL = 'https://mobilebackend.sfbio.se/services/4/';
+	const API_URL = 'https://mobilebackend.sfbio.se/services/5/';
 	
 	/**
 	* The SF Digest API User.
@@ -47,7 +47,7 @@ class Sf {
 	* @return mixed
 	*/
 	public function getMovie($movieId, $cityId = 'BS') {
-		return $this->makeCall('movies/moviedetail/' . $movieId . '?cityid=' . $cityId);
+		return $this->makeCall('movies/ ' . $cityId . '/movieid/' . $movieId);
 	}
 
 	/**
@@ -58,7 +58,7 @@ class Sf {
 	* @return mixed
 	*/
 	public function getAvailableMovies($cityId) {
-		return $this->makeCall('tickets/currentmovies/' . $cityId, 'GET');
+		return $this->makeCall('movies/' . $cityId . '/extended', 'GET');
 	}
 
 	/**
@@ -68,8 +68,8 @@ class Sf {
 	*
 	* @return mixed
 	*/
-	public function getUpcomingMovies() {
-		return $this->makeCall('movies/upcomingmovies', 'GET');
+	public function getUpcomingMovies($cityId = 'BS') {
+		return $this->makeCall('movies/' . $cityId . '/upcoming', 'GET');
 	}
 
 	/**
@@ -81,21 +81,22 @@ class Sf {
 	*
 	* @return mixed
 	*/
-	public function getTicketsOfMovie($movieId, $date, $cityId) {
-		return $this->makeCall('tickets/shows?cityid=' . $cityId . '&movieid=' . $movieId . '&date=' . $date . '&includeAllVersions=true', 'GET');
+	public function getTicketsOfMovie($movieId, $date, $cityId = 'BS') {
+		return $this->makeCall('shows/' . $cityId . '/movieid/' . $movieId . '/day/' . $date, 'GET');
+	}
+
+	public function getTicketInformation($movieDate, $movieTime, $sys99Code, $cityId, $cinemaName) {
+		return $this->makeCall('shows/showid/' . $movieDate . '_' . $movieTime . '_' . $sys99Code . '_' . $cityId . '/theatremainaccount/' . $cinemaName);
 	}
 
 	/**
-	* Get available seats in auditorium (Not working, not finished yet)
+	* Get Cinema seating layout
 	*
 	*
 	* @return mixed
 	*/
-	public function getAvailableSeats() {
-		//$theatreName, $sys99Code, $movieId, $date, $cityId
-		//return $this->makeCall('auditorium/layout/2001/5/60/50');
-		//return $this->makeCall('auditorium/layout/2001/4/60/50');
-		return $this->makeCall('auditorium/layout/2001/1/60/50');
+	public function getCinemaLayout($cinemaName, $sys99Code) {
+		return $this->makeCall('auditoriums/layout/theatremainaccount/' . $cinemaName . '/sys99code/' . $sys99Code . '/seatwidth/60/seatheight/50');
 	}
 
 
@@ -111,14 +112,42 @@ class Sf {
 	public function bookTickets($cityId = 'BS', $sys99Code, $datetime, $seats = null) {
 
 		$postData = [
-			'cityid' => $cityId,
-			'auditoriumsys99code' => $sys99Code,
-			'datetime' => $datetime,
-			'seatkey' => ':36'
+			'cityId' => $cityId,
+			'auditoriumSys99Code' => $sys99Code,
+			'dateTime' => $datetime,
+			'seatKeys' => [
+				[
+					'seatId' => '25',
+					'seatSection' => ''
+				],
+				[
+					'seatId' => '26',
+					'seatSection' => ''
+				]
+			]
 		];
 
 		return $this->makeCall(
-			'tickets/lockseats', 
+			'reservations/lockseats', 
+			'POST',
+			$postData
+		);
+	}
+
+	public function validatePayment($bookingId, $showType, $ticketType) {
+		$postData = [
+			'bookingId' => $bookingId,
+			'loyaltyCards' => [],
+			'showKey' => [
+				$showType
+			],
+			'ticketTypes' => [
+				$ticketType
+			]
+		];
+
+		return $this->makeCall(
+			'payments/validate', 
 			'POST',
 			$postData
 		);
@@ -132,11 +161,7 @@ class Sf {
 	*/
 	public function releaseTickets($bookingId) {
 		return $this->makeCall(
-			'tickets/unlockseats', 
-			'POST',
-			[
-				'bookingid' => $bookingId
-			]
+			'reservations/unlockseats/' . $bookingId
 		);
 	}
 
@@ -148,81 +173,15 @@ class Sf {
 	*/
 	public function getOffers($cityId = 'BS') {
 		return $this->makeCall('offers/list?uuid=7954B0AE-AC97-435D-A0EB-350932BAF933&ostype=Iphone&cityid=' . $cityId, 'GET');
-	}
-
-	/**
-	* Parse Digest WWW-authentication header
-	*
-	* @return array
-	*/
-	private function parseHttpDigest($digest) {
-	    $data = array();
-	    $parts = explode(", ", $digest);
-
-	    foreach ($parts as $element) {
-	    	$bits = explode("=", $element);
-	    	$data[$bits[0]] = str_replace('"','', $bits[1]);
-	    }
-	    $data['nonce'] = $data['nonce'] . '==';
-	    return $data;
-	}
-
-	/**
-	* Parse array and return Digest auth header
-	*
-	* @return string Digest header
-	*/
-	private function generateDigestHeader($data) {
-		$A1 = md5($this->_apiuser . ':' . $data['Digest realm'] . ':' . $this->_apipassword);
-		$A2 = md5("GET" . ':' . $data['uri']);
-		$responseHeader = md5("{$A1}:{$data['nonce']}:{$data['ncvalue']}:{$data['cnonce']}:{$data['qop']}:{$A2}");
-		$authString  = 'Digest username="' . $this->_apiuser . '", realm="';
-        $authString .= $data['Digest realm'].'", nonce="'.$data['nonce'].'",';
-        $authString .= ' uri="' . $data['uri'] . '", cnonce="' . $data['cnonce'];
-        $authString .= '", nc="' . $data['ncvalue'] . '", response="'.$responseHeader.'", qop="auth"';
-        return $authString;
-	}
-
-	private function get_headers_from_curl_response($response)
-	{
-	    $headers = array();
-
-	    $header_text = substr($response, 0, strpos($response, "\r\n\r\n"));
-
-	    foreach (explode("\r\n", $header_text) as $i => $line)
-	        if ($i === 0)
-	            $headers['http_code'] = $line;
-	        else
-	        {
-	            list ($key, $value) = explode(': ', $line);
-
-	            $headers[$key] = $value;
-	        }
-
-	    return $headers;
 	} 
 
-	protected function makeCall($function, $method = 'GET', $postData = null, $digestData = null) {
+	protected function makeCall($function, $method = 'GET', $postData = null) {
 
-		if (is_null($digestData)) {
-			$headerData = [
-		    	'User-Agent: SF Bio 4.0.2 rv:256 (iPhone; iPhone OS 8.3; sv_SE)',
-		    	'X-SF-Iphone-Version: 4.0.2',
-		    	'Authorization: Basic U0ZiaW9BUEk6YlNGNVBGSGNSNFoz'
-		    ];
-		} else {
-
-			$digestData['uri'] = '/services/4/' . $function;
-			$digestData['cnonce'] = md5(time());
-			$digestData['ncvalue'] = '00000001';
-			$authString = $this->generateDigestHeader($digestData);
-			
-			$headerData = [
-		    	'User-Agent: SF Bio 4.0.2 rv:256 (iPhone; iPhone OS 8.3; sv_SE)',
-		    	'X-SF-Iphone-Version: 4.0.2',
-		    	'Authorization: ' . $authString
-		    ];
-		}
+		$headerData = [
+	    	'User-Agent: SFBio/5.0.0 (iPhone; iOS 8.3; Scale/2.00)',
+	    	'X-SF-Iphone-Version: 5.0.0',
+	    	'Authorization: Basic U0ZiaW9BUEk6YlNGNVBGSGNSNFoz'
+	    ];
 
 		$paramString = null;
 		if (isset($postData) && is_array($postData)) {
@@ -252,11 +211,6 @@ class Sf {
 	    $header = substr($jsonData, 0, $header_size);
 		$body = substr($jsonData, $header_size);
 
-	    if (is_null($digestData)) {
-		    $headers = $this->get_headers_from_curl_response($jsonData);
-		    return $this->makeCall($function, $method, $postData, $this->parseHttpDigest($headers['WWW-Authenticate']));
-		} else {
-			return json_decode($body);
-		}
+		return json_decode($body);
 	}
 }
